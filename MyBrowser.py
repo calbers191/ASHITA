@@ -84,10 +84,14 @@ class MyBrowser():
 
         self.browser.visit('http://exac.broadinstitute.org/')
         self.browser.find_by_id('home-searchbox-input').fill(gene)
+        
         ## Press enter with selenium
         self.browser.driver.find_element_by_id('home-searchbox-input').send_keys(Keys.RETURN)
+        
+        ## Sleep 1 second until 'gene' contained in URL
         while re.search('gene', self.browser.url) is None:
             time.sleep(1)
+        
         time.sleep(5)
 
     def omim_nav(self, gene):
