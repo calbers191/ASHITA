@@ -16,16 +16,16 @@ class MyBrowser():
     @staticmethod
     def open_browser():
 
-        b = Browser()
+        b = Browser('chrome')
         b.driver.set_window_position(0,0)
         b.driver.set_window_size(1920, 1080)
 
         return b
 
 
-    def take_screenshot(self, filename, x1, y1, x2, y2):
+    def take_screenshot(self, filepath, filename, x1, y1, x2, y2):
         ss = pyscreenshot.grab(bbox=(x1, y1, x2, y2))
-        ss.save(filename)
+        ss.save(filepath + '\\' + filename)
 
     '''
     -------------------------------
@@ -34,13 +34,20 @@ class MyBrowser():
     '''
 
     def gnomad_nav(self, chrom, pos, ref, alt):
-        pass
+        self.browser.visit('http://gnomad.broadinstitute.org/variant/' + chrom + '-' + pos + '-' + ref + '-' + alt)
 
     def dbnsfp_nav(self, chrom, pos, ref, alt):
-        pass
+        self.browser.visit('https://varsome.com/variant/hg19/' + chrom + '-' + pos + '-' + ref + '-' + alt)
+        self.browser.find_by_id('agree').click()
+        self.browser.find_by_text('Proceed ').click()
+        time.sleep(4)
+        self.browser.find_by_text('DONE').click()
+        self.browser.find_by_text('dbNSFP ').click()
+        time.sleep(2)
 
     def gerp_nav(self, chrom, pos, ref, alt):
-        pass
+        self.browser.find_by_text('Gerp ').click()
+        time.sleep(2)
 
     def clinvar_missense_nav(self, gene):
 
@@ -94,13 +101,17 @@ class MyBrowser():
         
         time.sleep(5)
 
+
+    ## Returns width/height of phenotype table
     def omim_nav(self, gene):
         self.browser.visit('http://omim.org/')
         time.sleep(5)
         self.browser.find_by_xpath('/html/body/div[2]/div[4]/div/div/div[1]/button').click()
         self.browser.find_by_id('entrySearch').fill(gene)
+        time.sleep(2)
         self.browser.find_by_id('omimSearchSubmit').click()
         self.browser.find_by_text(gene).click()
-        element = self.browser.find_by_xpath("/html/body/div[2]/div[4]/div[1]/div[2]/div[3]/div[5]/div/table").first
+        element = self.browser.driver.find_element_by_xpath("/html/body/div[2]/div[4]/div[1]/div[2]/div[3]/div[5]/div/table")
+        print (element.location, element.size)
+        return {'xCoord': element.location['x'], 'yCoord': element.location['y'] + 70, 'height': element.size['height'] + 50, 'width': element.size['width']}
 
-        return {'width': element['offsetWidth'], 'height': element['offsetHeight']}
