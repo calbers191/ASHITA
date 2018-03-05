@@ -89,3 +89,14 @@ class MyBrowser():
         while re.search('gene', self.browser.url) is None:
             time.sleep(1)
         time.sleep(5)
+
+    def omim_nav(self, gene):
+        self.browser.visit('http://omim.org/')
+        time.sleep(5)
+        self.browser.find_by_xpath('/html/body/div[2]/div[4]/div/div/div[1]/button').click()
+        self.browser.find_by_id('entrySearch').fill(gene)
+        self.browser.find_by_id('omimSearchSubmit').click()
+        self.browser.find_by_text(gene).click()
+        element = self.browser.find_by_xpath("/html/body/div[2]/div[4]/div[1]/div[2]/div[3]/div[5]/div/table").first
+
+        return {'width': element['offsetWidth'], 'height': element['offsetHeight']}
