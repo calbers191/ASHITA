@@ -16,7 +16,7 @@ class MyBrowser():
     @staticmethod
     def open_browser():
 
-        b = Browser('chrome')
+        b = Browser()
         b.driver.set_window_position(0,0)
         b.driver.set_window_size(1920, 1080)
 
@@ -65,27 +65,15 @@ class MyBrowser():
         self.browser.find_by_text('Pathogenic').click()
         self.browser.find_by_text('Likely pathogenic').click()
 
-    def hsf_nav(self, gene, dna_change, transcript):
+    def hsf_nav(self, dna_change, transcript_id):
 
         self.browser.visit('http://www.umd.be/HSF3/HSF.shtml')
         self.browser.driver.find_element_by_xpath("//select[@id='choix_analyse']/option[@value='ssf_batch']").click()
-        self.browser.driver.find_element_by_xpath("//select[@id='choix_bdd']/option[@value='gene_name']").click()
-        GeneTextBox = self.browser.driver.find_element_by_name("champlibre")
-        GeneTextBox.click()
-        GeneTextBox.send_keys(gene)
-        DNAChangeTextBox = self.browser.driver.find_element_by_name("batch")
-        DNAChangeTextBox.click()
-        DNAChangeTextBox.send_keys(dna_change)
-        Analyze = self.browser.driver.find_element_by_id("proceed")
-        time.sleep(2)
-        Analyze.click()
-        time.sleep(2)
-        try:
-            proceed = self.browser.driver.find_element_by_id("exproceed")
-            if proceed.is_displayed and proceed.is_enabled():
-                proceed.click()
-        except:
-            print("Element not visible")
+        self.browser.driver.find_element_by_xpath("//select[@id='choix_bdd']/option[@value='transcript_id']").click()
+        self.browser.driver.find_element_by_name("champlibre").send_keys(transcript_id)
+        self.browser.driver.find_element_by_name("batch").send_keys(dna_change)
+        self.browser.driver.find_element_by_id("proceed").click()
+        self.browser.driver.execute_script("document.body.style.zoom='75%'")
 
     def exac_nav(self, gene):
 
