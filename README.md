@@ -1,2 +1,2 @@
 # ASHITA
-A Super Helpful Interpretation Tool for Assessments
+A Super Helpful Interpretive Tool for Assessments
