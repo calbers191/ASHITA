@@ -5,8 +5,7 @@ from MyBrowser import MyBrowser
 
 class MyVariant():
 
-    def __init__(self, copath_no, chr, pos, ref, alt, gene, transcript_id, c_dot):
-        self.copath_no = copath_no
+    def __init__(self, chr, pos, ref, alt, gene, transcript_id, c_dot, mimNumber):
         self.chr = chr
         self.pos = pos
         self.ref = ref
@@ -14,6 +13,7 @@ class MyVariant():
         self.gene = gene
         self.transcript_id = transcript_id
         self.c_dot = c_dot
+        self.mimNumber = mimNumber
 
 
     def get_functional_predictions(self):
@@ -183,4 +183,104 @@ class MyVariant():
             return True
         else:
             return False
-        
+
+    ## returns True if any related disease is autosomal dominant in OMIM gene-phenotype relationship table
+    def inheritance_is_AD(self):
+
+        apiKey = "PP_ZMQE7SGyxZxXV4baBYQ"
+        params = {'mimNumber': self.mimNumber, 'include': 'all', 'format': 'json', 'apiKey': apiKey}
+        url = "https://api.omim.org/api/entry"
+        r = requests.get(url, params=params)
+
+        if r.ok:
+            entry = r.json()['omim']['entryList'][0]['entry']
+            if 'geneMap' in entry:
+                genemap = entry['geneMap']
+                if 'phenotypeMapList' in genemap:
+                    inheritance_list = []
+                    for phenotype in genemap['phenotypeMapList']:
+                        inheritance_list.append(phenotype['phenotypeMap']['phenotypeInheritance'])
+                    if 'Autosomal dominant' in inheritance_list:
+                        return True
+                    else:
+                        return False
+                else:
+                    return 'no OMIM disease'
+            else:
+                return 'no genemap'
+        else:
+            return 'request failed'
+
+
+    def get_max_MAF(self):
+
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': 'Token aF31n1tErNi#yVp%j5@j2dL7Pws#xTYSZ8&b64@e'}
+        params = {'add-all-data': 1}
+        r = requests.get('https://api.varsome.com/lookup/' + self.chr + "-" + self.pos + "-" + self.ref + "-" + self.alt, params=params, headers=headers)
+
+        max_MAF = 0
+        maf_list = []
+
+        if 'gnomad_exomes' in r.json():
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_afr'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_amr'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_asj'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_eas'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_fin'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_nfe'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_oth'])
+            maf_list.append(r.json()['gnomad_exomes'][0]['af_sas'])
+
+        if 'gnomad_genomes' in r.json():
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_afr'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_amr'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_asj'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_eas'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_fin'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_nfe'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_oth'])
+            maf_list.append(r.json()['gnomad_genomes'][0]['af_sas'])
+
+        for maf in maf_list:
+            if maf > max_MAF:
+                max_MAF = maf
+
+        return max_MAF
+
+
+    def homozygotes_exist(self):
+
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': 'Token aF31n1tErNi#yVp%j5@j2dL7Pws#xTYSZ8&b64@e'}
+        params = {'add-all-data': 1}
+        r = requests.get(
+            'https://api.varsome.com/lookup/' + self.chr + "-" + self.pos + "-" + self.ref + "-" + self.alt,
+            params=params, headers=headers)
+
+        population_list = []
+
+        if 'gnomad_exomes' in r.json():
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_afr'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_amr'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_asj'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_eas'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_fin'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_nfe'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_oth'])
+            population_list.append(r.json()['gnomad_exomes'][0]['hom_sas'])
+
+        if 'gnomad_genomes' in r.json():
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_afr'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_amr'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_asj'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_eas'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_fin'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_nfe'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_oth'])
+            population_list.append(r.json()['gnomad_genomes'][0]['hom_sas'])
+
+        for pop in population_list:
+            if pop != 0:
+                return True
+        return False
