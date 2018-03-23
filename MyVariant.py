@@ -1,5 +1,4 @@
 import requests
-
 from MyBrowser import MyBrowser
 
 
@@ -139,9 +138,8 @@ class MyVariant():
         else:
             return 'conflicting'
 
-        ##return [mutation_taster, mutation_assessor, fathmm, fathmmMKL, metaSVM, metalR, provean, LRT, sift, gerp]
 
-
+    ## returns true if less than 10% of total missense variants are benign in ClinVar
     def get_pp2(self):
 
         b = MyBrowser(head=False)
@@ -162,6 +160,7 @@ class MyVariant():
             return False
 
 
+    ## returns true if greater than 90% of pathogenic/likely pathogenic alterations are LOF (frameshift, nonsense, splice site) in ClinVar
     def get_bp1(self):
 
         b = MyBrowser(head=False)
@@ -183,6 +182,7 @@ class MyVariant():
             return True
         else:
             return False
+
 
     ## returns True if any related disease is autosomal dominant in OMIM gene-phenotype relationship table
     def inheritance_is_AD(self):
@@ -211,7 +211,7 @@ class MyVariant():
         else:
             return 'request failed'
 
-
+    ## returns max minor allele frequency of any sub-population in gnomAD genomes or exomes
     def get_max_MAF(self):
 
         headers = {'Content-Type': 'application/json',
@@ -249,6 +249,7 @@ class MyVariant():
         return max_MAF
 
 
+    ## returns true if any homozygotes exist in gnomAD genomes or exomes
     def homozygotes_exist(self):
 
         headers = {'Content-Type': 'application/json',
